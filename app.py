@@ -2,16 +2,13 @@ import os
 from dotenv import load_dotenv
 
 from flask import (
-    Flask, render_template, request, flash, redirect, session, g, abort,
+    Flask, request, flash, redirect, session, g, abort
 )
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import (
-    UserAddForm, UserEditForm, LoginForm, MessageForm, CSRFProtection,
-)
 from models import (
-    db, connect_db, User, Message, DEFAULT_IMAGE_URL, DEFAULT_HEADER_IMAGE_URL)
+    db, connect_db, User, Listing, Photo)
 
 load_dotenv()
 
@@ -146,7 +143,7 @@ def logout():
 def get_all_listings():
     """Returns list of listings.
 
-    Can take a 'q' param in querystring to search by that username.
+    Can take a 'q' param in querystring to search for listing.
     """
 
 

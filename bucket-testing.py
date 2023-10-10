@@ -2,19 +2,14 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 import os
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
+
+load_dotenv()
 
 AWS_ACCESS_KEY = os.environ['ACCESS_KEY']
 AWS_SECRET_KEY = os.environ['SECRET_KEY']
 
 bucket = 'be-sharebnb-listing-photos'
-
-s3 = boto3.client(
-    's3',
-    'us-west-1',
-    aws_access_key_id=AWS_ACCESS_KEY,
-    aws_secret_access_key=AWS_SECRET_KEY,
-)
 
 
 def upload_file(file_name, bucket, object_name=None):
@@ -39,8 +34,5 @@ def upload_file(file_name, bucket, object_name=None):
 
 
 s3 = boto3.client('s3')
-with open("house.jpg", bucket) as f:
-    s3.upload_fileobj(f, bucket, "OBJECT_NAME")
-
-
-# upload_file('house.jpg', bucket)
+with open("house.jpg", 'rb') as f:
+    s3.upload_fileobj(f, bucket, "house.jpg")
