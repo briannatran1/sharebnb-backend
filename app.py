@@ -2,13 +2,15 @@ import os
 from dotenv import load_dotenv
 
 from flask import (
-    Flask, request, flash, redirect, session, g, abort
+    Flask, request, flash, redirect, session, g, abort, jsonify
 )
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from models import (
     db, connect_db, User, Listing, Photo)
+
+from forms import CSRFProtection
 
 load_dotenv()
 
@@ -145,19 +147,53 @@ def get_all_listings():
 
     Can take a 'q' param in querystring to search for listing.
     """
+    listings = Listing.query.all()
+    serialized = listings.serialize()
+
+    return jsonify(listings=serialized)
 
 
 @app.get('/listings/<int:id>')
-def get_listing():
+def get_listing(listing_id):
     """Returns Details of Listing
 
     Pulls id from query
     """
 
+    listing = Listing.query.get_or_404(listing_id)
+    serialized = listing.serialize()
+
+    return jsonify(listing=serialized)
+
 
 @app.post('/listings')
 def create_listing():
     """Endpoint for creating new listing"""
+
+    name = request.json['name']
+    price = request.json['price']
+    details = request.json['details']
+
+    url = request.json['url']
+
+    # submit listing first
+    new_listing = Listing(name=name,
+                          price=price,
+                          details=details)
+
+    db.session.add(new_listing)
+    db.session.commit()
+
+    return (jsonify(new_listing=new_listing.to_dict()), 201)
+
+# new endpoint
+    # then show form for adding photos
+    new_photo = Photo(url=url,
+                      listing_id=new_listing.id)
+
+    db.session.add(new_photo)
+    db.session.commit()
+
 
 ##############################################################################
 # General message routes:

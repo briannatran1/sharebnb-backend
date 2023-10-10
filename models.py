@@ -74,6 +74,15 @@ class User(db.Model):
 
         return False
 
+    def serialize(self):
+        """Serialize to dictionary"""
+
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email
+        }
+
 
 class Listing(db.Model):
     """Property listing."""
@@ -86,6 +95,11 @@ class Listing(db.Model):
         autoincrement=True,
     )
 
+    name = db.Column(
+        db.String(50),
+        nullable=False,
+    )
+
     price = db.Column(
         db.Numeric(6, 2),
         nullable=False
@@ -95,6 +109,16 @@ class Listing(db.Model):
         db.String(300),
         nullable=False,
     )
+
+    def serialize(self):
+        """Serialize to dictionary"""
+
+        return {
+            "id": self.id,
+            "name": self.name,
+            "price": self.price,
+            "details": self.details
+        }
 
 
 class Photo(db.Model):
@@ -145,6 +169,16 @@ class Message(db.Model):
         db.ForeignKey('users.id'),
         nullable=False,
     )
+
+    def serialize(self):
+        """Serialize to dictionary"""
+
+        return {
+            "id": self.id,
+            "text": self.text,
+            "timestamp": self.timestamp,
+            "user_id": self.user_id
+        }
 
     # messages from and to?
 
