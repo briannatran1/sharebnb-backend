@@ -2,9 +2,9 @@ import os
 from dotenv import load_dotenv
 
 from flask import (
-    Flask, request, flash, redirect, session, g, abort, jsonify
+    Flask, request, flash, redirect, session, g, jsonify
 )
-from flask_debugtoolbar import DebugToolbarExtension
+# from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from models import (
@@ -18,11 +18,12 @@ CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL', 'postgresql:///sharebnb')
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
-toolbar = DebugToolbarExtension(app)
+# toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
@@ -206,6 +207,6 @@ def get_messages():
 
 
 @app.post('/messages/<int:listing_id>')
-def get_messages():
+def create_message():
     """ create messages..
     """
