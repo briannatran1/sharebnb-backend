@@ -33,6 +33,13 @@ def upload_file(file_name, bucket, object_name=None):
     return True
 
 
-s3 = boto3.client('s3')
-with open("house.jpg", 'rb') as f:
-    s3.upload_fileobj(f, bucket, "house.jpg")
+# s3 = boto3.client('s3')
+# with open("house.jpg", 'rb') as f:
+#     s3.upload_fileobj(f, bucket, "house.jpg")
+
+AWSFILENAME = "TEST.jpg"
+upload_file("house.jpg", bucket, AWSFILENAME)
+
+
+def upload_listing_photo(file):
+    upload_file(file, bucket, file)
