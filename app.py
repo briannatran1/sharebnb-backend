@@ -8,7 +8,7 @@ from flask import (
 from sqlalchemy.exc import IntegrityError
 
 from models import (
-    db, connect_db, User, Listing, Photo, Message)
+    db, connect_db, User, Listing, Photo, Message, Booking)
 
 from werkzeug.utils import secure_filename
 from forms import CSRFProtection
@@ -214,9 +214,12 @@ def book_listing(listing_id):
 
     listing = Listing.query.get_or_404(listing_id)
 
-    user = User.query.get_or_404(g.user.id)
-    user.booked_listings.append(listing)
+    if not listing:
+        return (jsonify(msg="BAD REQUEST"))
 
+    new_booking = Booking(listing_id=listing_id, booking_user_id=g.user.id)
+
+    db.session.add(new_booking)
     db.session.commit()
 
     return jsonify(msg='Successfully booked!')

@@ -95,6 +95,53 @@ class Listing(db.Model):
         }
 
 
+class Message(db.Model):
+    """An individual message"""
+
+    __tablename__ = 'messages'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    text = db.Column(
+        db.String(160),
+        nullable=False,
+    )
+
+    timestamp = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
+
+    sender_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        nullable=False,
+    )
+
+    recipient_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        nullable=False,
+    )
+
+    def serialize(self):
+        """Serialize to dictionary"""
+
+        return {
+            "id": self.id,
+            "text": self.text,
+            "timestamp": self.timestamp,
+            "user_id": self.user_id
+        }
+
+    # messages from and to?
+
+
 class User(db.Model):
     """User in the system"""
 
@@ -135,6 +182,14 @@ class User(db.Model):
 
     owned_listings = db.relationship("Listing", backref="users")
     booked_listings = db.relationship('Booking', backref='users')
+
+    sent_messages = db.relationship(
+        "User",
+        secondary="messages",
+        primaryjoin=(Message.sender_id == id),
+        secondaryjoin=(Message.recipient_id == id),
+        backref="recieved_messages",
+    )
 
     # booked_listings = db.relationship(
     #     "Listing",
@@ -227,47 +282,6 @@ class Photo(db.Model):
             "url": self.url,
             "listing_id": self.listing_id,
         }
-
-
-class Message(db.Model):
-    """An individual message"""
-
-    __tablename__ = 'messages'
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-        autoincrement=True,
-    )
-
-    text = db.Column(
-        db.String(160),
-        nullable=False,
-    )
-
-    timestamp = db.Column(
-        db.DateTime,
-        nullable=False,
-        default=datetime.utcnow,
-    )
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id'),
-        nullable=False,
-    )
-
-    def serialize(self):
-        """Serialize to dictionary"""
-
-        return {
-            "id": self.id,
-            "text": self.text,
-            "timestamp": self.timestamp,
-            "user_id": self.user_id
-        }
-
-    # messages from and to?
 
 
 def connect_db(app):
