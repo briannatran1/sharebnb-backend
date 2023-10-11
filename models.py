@@ -20,6 +20,16 @@ class User(db.Model):
         autoincrement=True
     )
 
+    first_name = db.Column(
+        db.String(30),
+        nullable=False,
+    )
+
+    last_name = db.Column(
+        db.String(30),
+        nullable=False,
+    )
+
     username = db.Column(
         db.String(30),
         nullable=False,
@@ -40,7 +50,7 @@ class User(db.Model):
     # listings = db.relationship("Listing", backref="users")
 
     @classmethod
-    def signup(cls, username, email, password):
+    def signup(cls, first_name, last_name, username, email, password):
         """Sign up user.
 
         Hashes password and adds user to session.
@@ -49,6 +59,8 @@ class User(db.Model):
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = User(
+            first_name=first_name,
+            last_name=last_name,
             username=username,
             email=email,
             password=hashed_pwd,
@@ -83,6 +95,8 @@ class User(db.Model):
 
         return {
             "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
             "username": self.username,
             "email": self.email,
             # "listings": [listing.serialize() for listing in self.listings]

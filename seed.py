@@ -5,10 +5,11 @@ db.drop_all()
 db.create_all()
 
 u1 = User(
+    first_name="cherry",
+    last_name="blossom",
     username="cherry",
     email="large@large.com",
     password="$2b$12$Q1PUFjhN/AWRQ21LbGYvjeLpZZB6lfZ1BPwifHALGO6oIbyC3CmJe",
-
 )
 
 l1 = Listing(

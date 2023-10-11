@@ -13,6 +13,7 @@ from models import (
 from werkzeug.utils import secure_filename
 from forms import CSRFProtection
 import bucket_testing
+from authlib.jose import jwt
 
 load_dotenv()
 
@@ -69,74 +70,78 @@ def do_logout():
 def signup():
     """Handle user signup.
 
-    Create new user and add to DB. Redirect to home page.
+    Create new user and add to DB.
+
+    Returns JSON {'users': {id, first_name, last_name}}
 
     If the there already is a user with that username: flash message
     """
-
     do_logout()
 
-    if form.validate_on_submit():
-        try:
-            user = User.signup(
-                username=form.username.data,
-                password=form.password.data,
-                email=form.email.data,
-                image_url=form.image_url.data or User.image_url.default.arg,
-            )
-            db.session.commit()
+    first_name = request.json['first_name']
+    last_name = request.json['last_name']
+    email = request.json['email']
+    password = request.json['password']
+    username = request.json['username']
 
-        except IntegrityError:
-            flash("Username already taken", 'danger')
+    if (User.query.filter_by(email=email).first()):
+        msg = 'Email is already registered.'
+        return jsonify(msg=msg)
 
-        do_login(user)
+    if (User.query.filter_by(username=username).first()):
+        msg = 'Username is taken. Please choose a different one.'
+        return jsonify(msg=msg)
 
-        return redirect("/")
+    new_user = User.signup(
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        password=password,
+        username=username
+    )
 
-    else:
-        return render_template('users/signup.html', form=form)
+    db.session.commit()
+    do_login(new_user)
+    serialized = new_user.serialize()
+
+    return (jsonify(user=serialized), 201)
 
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
-    """Handle user login and redirect to homepage on success."""
+    """Handle user login
 
-    form = LoginForm()
+    Returns JSON {"user": {id, first_name, last_name}}"""
+    username = request.json['username']
+    password = request.json['password']
 
-    if form.validate_on_submit():
-        user = User.authenticate(
-            form.username.data,
-            form.password.data,
-        )
+    valid_user = User.authenticate(username, password)
 
-        if user:
-            do_login(user)
-            flash(f"Hello, {user.username}!", "success")
-            return redirect("/")
+    if valid_user:
+        do_login(valid_user)
+        serialized = valid_user.serialize()
+        return jsonify(user=serialized)
 
-        flash("Invalid credentials.", 'danger')
-
-    return render_template('users/login.html', form=form)
+    return jsonify(msg='Invalid credentials.')
 
 
 @app.post('/logout')
 def logout():
     """Handle logout of user and redirect to homepage."""
 
-    form = g.csrf_form
+    # form = g.csrf_form
 
-    if not form.validate_on_submit() or not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+    if g.user:
+        g.user = None
+        do_logout()
+        msg = 'Logged out successfully'
+        return jsonify(msg=msg)
 
-    do_logout()
-
-    flash("You have successfully logged out.", 'success')
-    return redirect("/login")
-
+    return jsonify(msg='You are not logged in')
 
 ##############################################################################
 # General listing routes:
+
 
 @app.get('/listings')
 def get_all_listings():
@@ -145,7 +150,6 @@ def get_all_listings():
     Can take a 'q' param in querystring to search for listing.
     """
     listings = Listing.query.all()
-    print("\n \n \n listings \n\n\n", listings[0])
     serialized = [listing.serialize() for listing in listings]
 
     return jsonify(listings=serialized)
