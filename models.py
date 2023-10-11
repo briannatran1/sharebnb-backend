@@ -35,6 +35,15 @@ class Booking(db.Model):
         nullable=False,
     )
 
+    def serialize(self):
+        """Serialize to dictionary"""
+
+        return {
+            "id": self.id,
+            "listing_id": self.listing_id,
+            "booking_user_id": self.booking_user_id,
+        }
+
 
 class Listing(db.Model):
     """Property listing."""
@@ -71,6 +80,8 @@ class Listing(db.Model):
 
     photos = db.relationship('Photo', backref='listings')
 
+    booked_listings = db.relationship('Booking', backref='listings')
+
     def serialize(self):
         """Serialize to dictionary"""
 
@@ -79,7 +90,8 @@ class Listing(db.Model):
             "name": self.name,
             "price": self.price,
             "details": self.details,
-            "photos": [photo.serialize() for photo in self.photos]
+            "photos": [photo.serialize() for photo in self.photos],
+            "booked_listings": [booked_listing.serialize() for booked_listing in self.booked_listings]
         }
 
 
@@ -122,13 +134,14 @@ class User(db.Model):
     )
 
     owned_listings = db.relationship("Listing", backref="users")
+    booked_listings = db.relationship('Booking', backref='users')
 
-    booked_listings = db.relationship(
-        "Listing",
-        secondary="bookings",
-        primaryjoin=(Booking.booking_user_id == id),
-        secondaryjoin=(Booking.listing_id == Listing.id),
-        backref='users')
+    # booked_listings = db.relationship(
+    #     "Listing",
+    #     secondary="bookings",
+    #     primaryjoin=(Booking.booking_user_id == id),
+    #     secondaryjoin=(Booking.listing_id == Listing.id),
+    #     backref='users')
 
     @classmethod
     def signup(cls, first_name, last_name, username, email, password):
@@ -180,7 +193,7 @@ class User(db.Model):
             "last_name": self.last_name,
             "username": self.username,
             "email": self.email,
-            "booked_listings": [listing.serialize() for listing in self.booked_listings]
+            "booked_listings": [booked_listing.serialize() for booked_listing in self.booked_listings]
         }
 
 
