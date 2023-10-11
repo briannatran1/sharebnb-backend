@@ -47,7 +47,7 @@ class User(db.Model):
         nullable=False,
     )
 
-    listings = db.relationship("Listing", backref="users")
+    booked_listings = db.relationship("Listing", backref="users")
 
     @classmethod
     def signup(cls, first_name, last_name, username, email, password):
@@ -99,8 +99,7 @@ class User(db.Model):
             "last_name": self.last_name,
             "username": self.username,
             "email": self.email,
-            "listings": [listing.serialize() for listing in self.listings]
-
+            "booked_listings": [listing.serialize() for listing in self.booked_listings]
         }
 
 

@@ -41,8 +41,6 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-        print("\n\n\n\n g.user.id when loggedin \n\n\n\n", g.user.id)
-
     else:
         g.user = None
 
@@ -141,6 +139,10 @@ def logout():
     return jsonify(msg='You are not logged in')
 
 ##############################################################################
+# General users routes:
+
+
+##############################################################################
 # General listing routes:
 
 
@@ -201,6 +203,23 @@ def create_listing():
     serialized = new_listing.serialize()
 
     return (jsonify(new_listing=serialized), 201)
+
+
+@app.post('/listings/<int:listing_id>/book')
+def book_listing(listing_id):
+    """Allows user to book property listing"""
+
+    if not g.user:
+        return (jsonify(msg="NOT AUTHORIZED"))
+
+    listing = Listing.query.get_or_404(listing_id)
+
+    user = User.query.get_or_404(g.user.id)
+    user.booked_listings.append(listing)
+
+    db.session.commit()
+
+    return jsonify(msg='Successfully booked!')
 
 ##############################################################################
 # Photos for Listings
