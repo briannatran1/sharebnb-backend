@@ -1,5 +1,5 @@
 from app import app
-from models import db, User, Listing, Photo
+from models import db, User, Listing, Photo, Booking
 
 db.drop_all()
 db.create_all()
@@ -24,9 +24,10 @@ p1 = Photo(
     listing_id=1
 )
 
-# m1 = Message(
+b1 = Booking(
+    booking_user_id=1,
+    listing_id=1
+)
 
-# )
-
-db.session.add_all([u1, l1, p1])
+db.session.add_all([u1, l1, p1, b1])
 db.session.commit()

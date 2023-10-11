@@ -9,6 +9,80 @@ bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 
+class Booking(db.Model):
+    """An individual Booking"""
+
+    __tablename__ = 'bookings'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    # owner id?
+    # date
+
+    listing_id = db.Column(
+        db.Integer,
+        db.ForeignKey('listings.id'),
+        nullable=False,
+    )
+
+    booking_user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        nullable=False,
+    )
+
+
+class Listing(db.Model):
+    """Property listing."""
+
+    __tablename__ = 'listings'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    name = db.Column(
+        db.String(50),
+        nullable=False,
+    )
+
+    price = db.Column(
+        db.Numeric(6, 2),
+        nullable=False
+    )
+
+    details = db.Column(
+        db.String(300),
+        nullable=False,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+
+    )
+
+    photos = db.relationship('Photo', backref='listings')
+
+    def serialize(self):
+        """Serialize to dictionary"""
+
+        return {
+            "id": self.id,
+            "name": self.name,
+            "price": self.price,
+            "details": self.details,
+            "photos": [photo.serialize() for photo in self.photos]
+        }
+
+
 class User(db.Model):
     """User in the system"""
 
@@ -47,7 +121,14 @@ class User(db.Model):
         nullable=False,
     )
 
-    booked_listings = db.relationship("Listing", backref="users")
+    owned_listings = db.relationship("Listing", backref="users")
+
+    booked_listings = db.relationship(
+        "Listing",
+        secondary="bookings",
+        primaryjoin=(Booking.booking_user_id == id),
+        secondaryjoin=(Booking.listing_id == Listing.id),
+        backref='users')
 
     @classmethod
     def signup(cls, first_name, last_name, username, email, password):
@@ -103,53 +184,6 @@ class User(db.Model):
         }
 
 
-class Listing(db.Model):
-    """Property listing."""
-
-    __tablename__ = 'listings'
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-        autoincrement=True,
-    )
-
-    name = db.Column(
-        db.String(50),
-        nullable=False,
-    )
-
-    price = db.Column(
-        db.Numeric(6, 2),
-        nullable=False
-    )
-
-    details = db.Column(
-        db.String(300),
-        nullable=False,
-    )
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False,
-
-    )
-
-    photos = db.relationship('Photo', backref='listings')
-
-    def serialize(self):
-        """Serialize to dictionary"""
-
-        return {
-            "id": self.id,
-            "name": self.name,
-            "price": self.price,
-            "details": self.details,
-            "photos": [photo.serialize() for photo in self.photos]
-        }
-
-
 class Photo(db.Model):
     """Photo for listing"""
 
@@ -190,6 +224,7 @@ class Message(db.Model):
     id = db.Column(
         db.Integer,
         primary_key=True,
+        autoincrement=True,
     )
 
     text = db.Column(
