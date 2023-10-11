@@ -34,111 +34,105 @@ connect_db(app)
 # User signup/login/logout
 
 
-# @app.before_request
-# def add_user_to_g():
-#     """If we're logged in, add curr user to Flask global."""
+@app.before_request
+def add_user_to_g():
+    """If we're logged in, add curr user to Flask global."""
 
-#     if CURR_USER_KEY in session:
-#         g.user = User.query.get(session[CURR_USER_KEY])
+    if CURR_USER_KEY in session:
+        g.user = User.query.get(session[CURR_USER_KEY])
 
-#     else:
-#         g.user = None
-
-
-# @app.before_request
-# def add_csrf_only_form():
-#     """Add a CSRF-only form so that every route can use it."""
-
-#     g.csrf_form = CSRFProtection()
+    else:
+        g.user = None
 
 
-# def do_login(user):
-#     """Log in user."""
+@app.before_request
+def add_csrf_only_form():
+    """Add a CSRF-only form so that every route can use it."""
 
-#     session[CURR_USER_KEY] = user.id
-
-
-# def do_logout():
-#     """Log out user."""
-
-#     if CURR_USER_KEY in session:
-#         del session[CURR_USER_KEY]
+    g.csrf_form = CSRFProtection()
 
 
-# @app.route('/signup', methods=["GET", "POST"])
-# def signup():
-#     """Handle user signup.
+def do_login(user):
+    """Log in user."""
 
-#     Create new user and add to DB. Redirect to home page.
-
-#     If form not valid, present form.
-
-#     If the there already is a user with that username: flash message
-#     and re-present form.
-#     """
-
-#     do_logout()
-
-#     form = UserAddForm()
-
-#     if form.validate_on_submit():
-#         try:
-#             user = User.signup(
-#                 username=form.username.data,
-#                 password=form.password.data,
-#                 email=form.email.data,
-#                 image_url=form.image_url.data or User.image_url.default.arg,
-#             )
-#             db.session.commit()
-
-#         except IntegrityError:
-#             flash("Username already taken", 'danger')
-#             return render_template('users/signup.html', form=form)
-
-#         do_login(user)
-
-#         return redirect("/")
-
-#     else:
-#         return render_template('users/signup.html', form=form)
+    session[CURR_USER_KEY] = user.id
 
 
-# @app.route('/login', methods=["GET", "POST"])
-# def login():
-#     """Handle user login and redirect to homepage on success."""
+def do_logout():
+    """Log out user."""
 
-#     form = LoginForm()
-
-#     if form.validate_on_submit():
-#         user = User.authenticate(
-#             form.username.data,
-#             form.password.data,
-#         )
-
-#         if user:
-#             do_login(user)
-#             flash(f"Hello, {user.username}!", "success")
-#             return redirect("/")
-
-#         flash("Invalid credentials.", 'danger')
-
-#     return render_template('users/login.html', form=form)
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
 
 
-# @app.post('/logout')
-# def logout():
-#     """Handle logout of user and redirect to homepage."""
+@app.route('/signup', methods=["GET", "POST"])
+def signup():
+    """Handle user signup.
 
-#     form = g.csrf_form
+    Create new user and add to DB. Redirect to home page.
 
-#     if not form.validate_on_submit() or not g.user:
-#         flash("Access unauthorized.", "danger")
-#         return redirect("/")
+    If the there already is a user with that username: flash message
+    """
 
-#     do_logout()
+    do_logout()
 
-#     flash("You have successfully logged out.", 'success')
-#     return redirect("/login")
+    if form.validate_on_submit():
+        try:
+            user = User.signup(
+                username=form.username.data,
+                password=form.password.data,
+                email=form.email.data,
+                image_url=form.image_url.data or User.image_url.default.arg,
+            )
+            db.session.commit()
+
+        except IntegrityError:
+            flash("Username already taken", 'danger')
+
+        do_login(user)
+
+        return redirect("/")
+
+    else:
+        return render_template('users/signup.html', form=form)
+
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    """Handle user login and redirect to homepage on success."""
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = User.authenticate(
+            form.username.data,
+            form.password.data,
+        )
+
+        if user:
+            do_login(user)
+            flash(f"Hello, {user.username}!", "success")
+            return redirect("/")
+
+        flash("Invalid credentials.", 'danger')
+
+    return render_template('users/login.html', form=form)
+
+
+@app.post('/logout')
+def logout():
+    """Handle logout of user and redirect to homepage."""
+
+    form = g.csrf_form
+
+    if not form.validate_on_submit() or not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    do_logout()
+
+    flash("You have successfully logged out.", 'success')
+    return redirect("/login")
 
 
 ##############################################################################
@@ -189,13 +183,22 @@ def create_listing():
 
     return (jsonify(new_listing=serialized), 201)
 
+##############################################################################
 # Photos for Listings
+
+
+@app.get('/photos')
+def get_all_photos():
+    """Gets all photos in db"""
+    photos = Photo.query.all()
+    serialized = [photo.serialize() for photo in photos]
+
+    return jsonify(photos=serialized)
 
 
 @app.post('/listings/<int:id>/photos')
 def create_photos_for_listing(id):
     """Creates a photo for new listing"""
-    print(" \n \n \n request.files \n \n \n", request.files)
     url = None
     img = request.files['file']
     # TODO: Handle non-img photos?
@@ -219,10 +222,10 @@ def create_photos_for_listing(id):
 
     return jsonify(new_photo=serialized)
 
-
-@app.post('/listing')
 ##############################################################################
 # General message routes:
+
+
 @app.get('/messages/<int:listing_id>')
 def get_messages():
     """Returns list of messages..

@@ -131,6 +131,7 @@ class Photo(db.Model):
     id = db.Column(
         db.Integer,
         primary_key=True,
+        autoincrement=True,
     )
 
     url = db.Column(

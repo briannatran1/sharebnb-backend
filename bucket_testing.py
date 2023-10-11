@@ -54,8 +54,8 @@ def get_file_url(bucket, object_name):
 #     s3.upload_fileobj(f, bucket, "house.jpg")
 
 
-AWSFILENAME = "TEST.jpg"
-upload_file("house.jpg", bucket, AWSFILENAME)
+# AWSFILENAME = "TEST.jpg"
+# upload_file("house.jpg", bucket, AWSFILENAME)
 
 
 def upload_listing_photo(file):
