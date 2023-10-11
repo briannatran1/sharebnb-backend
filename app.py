@@ -8,7 +8,7 @@ from flask import (
 from sqlalchemy.exc import IntegrityError
 
 from models import (
-    db, connect_db, User, Listing, Photo)
+    db, connect_db, User, Listing, Photo, Message)
 
 from werkzeug.utils import secure_filename
 from forms import CSRFProtection
@@ -150,7 +150,15 @@ def get_all_listings():
 
     Can take a 'q' param in querystring to search for listing.
     """
-    listings = Listing.query.all()
+
+    search = request.args.get('q')
+
+    if not search:
+        listings = Listing.query.all()
+    else:
+        listings = Listing.query.filter(
+            Listing.name.ilike(f"%{search}%")).all()
+
     serialized = [listing.serialize() for listing in listings]
 
     return jsonify(listings=serialized)
@@ -241,6 +249,11 @@ def create_photos_for_listing(id):
 def get_messages():
     """Returns list of messages..
     """
+
+    messages = Message.query.all()
+    serialized = [message.serialize() for message in messages]
+
+    return jsonify(messages=serialized)
 
 
 @app.post('/messages/<int:listing_id>')

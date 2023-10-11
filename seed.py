@@ -25,5 +25,9 @@ p1 = Photo(
 
 )
 
+m1 = Message(
+
+)
+
 db.session.add_all([u1, l1, p1])
 db.session.commit()
