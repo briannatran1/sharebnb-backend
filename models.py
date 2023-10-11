@@ -47,7 +47,7 @@ class User(db.Model):
         nullable=False,
     )
 
-    # listings = db.relationship("Listing", backref="users")
+    listings = db.relationship("Listing", backref="users")
 
     @classmethod
     def signup(cls, first_name, last_name, username, email, password):
@@ -99,7 +99,7 @@ class User(db.Model):
             "last_name": self.last_name,
             "username": self.username,
             "email": self.email,
-            # "listings": [listing.serialize() for listing in self.listings]
+            "listings": [listing.serialize() for listing in self.listings]
 
         }
 
@@ -130,12 +130,12 @@ class Listing(db.Model):
         nullable=False,
     )
 
-    # user_id = db.Column(
-    #     db.Integer,
-    #     db.ForeignKey('users.id', ondelete='CASCADE'),
-    #     nullable=False,
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
 
-    # )
+    )
 
     photos = db.relationship('Photo', backref='listings')
 

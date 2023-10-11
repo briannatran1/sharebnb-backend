@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 from flask import (
-    Flask, request, flash, redirect, session, g, jsonify
+    Flask, request, session, g, jsonify
 )
 # from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
@@ -13,7 +13,7 @@ from models import (
 from werkzeug.utils import secure_filename
 from forms import CSRFProtection
 import bucket_testing
-from authlib.jose import jwt
+# from authlib.jose import jwt
 
 load_dotenv()
 
@@ -41,6 +41,7 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
+        print("\n\n\n\n g.user.id when loggedin \n\n\n\n", g.user.id)
 
     else:
         g.user = None
@@ -111,7 +112,7 @@ def signup():
 def login():
     """Handle user login
 
-    Returns JSON {"user": {id, first_name, last_name}}"""
+    Returns JSON {"user": {id, first_name, last_name, email, username}}"""
     username = request.json['username']
     password = request.json['password']
 
@@ -172,14 +173,19 @@ def get_listing(id):
 def create_listing():
     """Endpoint for creating new listing"""
 
+    if not g.user:
+        return (jsonify(msg="NOT AUTHORIZED"))
+
     name = request.json['name']
     price = request.json['price']
     details = request.json['details']
+    user_id = g.user.id
 
     # submit listing first
     new_listing = Listing(name=name,
                           price=price,
-                          details=details)
+                          details=details,
+                          user_id=user_id)
 
     db.session.add(new_listing)
     db.session.commit()
