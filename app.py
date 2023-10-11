@@ -10,7 +10,9 @@ from sqlalchemy.exc import IntegrityError
 from models import (
     db, connect_db, User, Listing, Photo)
 
+from werkzeug.utils import secure_filename
 from forms import CSRFProtection
+import bucket_testing
 
 load_dotenv()
 
@@ -187,15 +189,26 @@ def create_listing():
 
     return (jsonify(new_listing=serialized), 201)
 
+# Photos for Listings
+
 
 @app.post('/listings/<int:id>/photos')
 def create_photos_for_listing(id):
     """Creates a photo for new listing"""
+    print(" \n \n \n request.files \n \n \n", request.files)
+    url = None
+    img = request.files['file']
+    # TODO: Handle non-img photos?
+    if img:
+        # secure_filename renames the file in a correct format
+        filename = secure_filename(img.filename)
+        img.save(filename)
+
+        url = bucket_testing.upload_listing_photo(filename)
 
     # finds listing with id
     listing = Listing.query.get_or_404(id)
 
-    url = request.json['url']
     new_photo = Photo(url=url,
                       listing_id=listing.id)
 
@@ -207,10 +220,9 @@ def create_photos_for_listing(id):
     return jsonify(new_photo=serialized)
 
 
+@app.post('/listing')
 ##############################################################################
 # General message routes:
-
-
 @app.get('/messages/<int:listing_id>')
 def get_messages():
     """Returns list of messages..

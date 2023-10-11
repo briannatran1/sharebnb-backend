@@ -144,6 +144,15 @@ class Photo(db.Model):
         nullable=False,
     )
 
+    def serialize(self):
+        """Serialize to dictionary"""
+
+        return {
+            "id": self.id,
+            "url": self.url,
+            "listing_id": self.listing_id,
+        }
+
 
 class Message(db.Model):
     """An individual message"""
