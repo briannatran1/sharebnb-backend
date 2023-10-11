@@ -37,6 +37,8 @@ class User(db.Model):
         nullable=False,
     )
 
+    # listings = db.relationship("Listing", backref="users")
+
     @classmethod
     def signup(cls, username, email, password):
         """Sign up user.
@@ -82,7 +84,9 @@ class User(db.Model):
         return {
             "id": self.id,
             "username": self.username,
-            "email": self.email
+            "email": self.email,
+            # "listings": [listing.serialize() for listing in self.listings]
+
         }
 
 
@@ -112,6 +116,15 @@ class Listing(db.Model):
         nullable=False,
     )
 
+    # user_id = db.Column(
+    #     db.Integer,
+    #     db.ForeignKey('users.id', ondelete='CASCADE'),
+    #     nullable=False,
+
+    # )
+
+    photos = db.relationship('Photo', backref='listings')
+
     def serialize(self):
         """Serialize to dictionary"""
 
@@ -119,7 +132,8 @@ class Listing(db.Model):
             "id": self.id,
             "name": self.name,
             "price": self.price,
-            "details": self.details
+            "details": self.details,
+            "photos": [photo.serialize() for photo in self.photos]
         }
 
 
@@ -141,7 +155,7 @@ class Photo(db.Model):
 
     listing_id = db.Column(
         db.Integer,
-        db.ForeignKey('listings.id'),
+        db.ForeignKey('listings.id', ondelete='CASCADE'),
         nullable=False,
     )
 

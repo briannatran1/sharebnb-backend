@@ -145,6 +145,7 @@ def get_all_listings():
     Can take a 'q' param in querystring to search for listing.
     """
     listings = Listing.query.all()
+    print("\n \n \n listings \n\n\n", listings[0])
     serialized = [listing.serialize() for listing in listings]
 
     return jsonify(listings=serialized)

@@ -14,7 +14,7 @@ u1 = User(
 l1 = Listing(
     name="Brianna's patio",
     price=100.50,
-    details="It's great",
+    details="It's great"
 )
 
 p1 = Photo(
