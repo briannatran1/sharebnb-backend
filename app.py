@@ -32,111 +32,111 @@ connect_db(app)
 # User signup/login/logout
 
 
-@app.before_request
-def add_user_to_g():
-    """If we're logged in, add curr user to Flask global."""
+# @app.before_request
+# def add_user_to_g():
+#     """If we're logged in, add curr user to Flask global."""
 
-    if CURR_USER_KEY in session:
-        g.user = User.query.get(session[CURR_USER_KEY])
+#     if CURR_USER_KEY in session:
+#         g.user = User.query.get(session[CURR_USER_KEY])
 
-    else:
-        g.user = None
-
-
-@app.before_request
-def add_csrf_only_form():
-    """Add a CSRF-only form so that every route can use it."""
-
-    g.csrf_form = CSRFProtection()
+#     else:
+#         g.user = None
 
 
-def do_login(user):
-    """Log in user."""
+# @app.before_request
+# def add_csrf_only_form():
+#     """Add a CSRF-only form so that every route can use it."""
 
-    session[CURR_USER_KEY] = user.id
-
-
-def do_logout():
-    """Log out user."""
-
-    if CURR_USER_KEY in session:
-        del session[CURR_USER_KEY]
+#     g.csrf_form = CSRFProtection()
 
 
-@app.route('/signup', methods=["GET", "POST"])
-def signup():
-    """Handle user signup.
+# def do_login(user):
+#     """Log in user."""
 
-    Create new user and add to DB. Redirect to home page.
-
-    If form not valid, present form.
-
-    If the there already is a user with that username: flash message
-    and re-present form.
-    """
-
-    do_logout()
-
-    form = UserAddForm()
-
-    if form.validate_on_submit():
-        try:
-            user = User.signup(
-                username=form.username.data,
-                password=form.password.data,
-                email=form.email.data,
-                image_url=form.image_url.data or User.image_url.default.arg,
-            )
-            db.session.commit()
-
-        except IntegrityError:
-            flash("Username already taken", 'danger')
-            return render_template('users/signup.html', form=form)
-
-        do_login(user)
-
-        return redirect("/")
-
-    else:
-        return render_template('users/signup.html', form=form)
+#     session[CURR_USER_KEY] = user.id
 
 
-@app.route('/login', methods=["GET", "POST"])
-def login():
-    """Handle user login and redirect to homepage on success."""
+# def do_logout():
+#     """Log out user."""
 
-    form = LoginForm()
-
-    if form.validate_on_submit():
-        user = User.authenticate(
-            form.username.data,
-            form.password.data,
-        )
-
-        if user:
-            do_login(user)
-            flash(f"Hello, {user.username}!", "success")
-            return redirect("/")
-
-        flash("Invalid credentials.", 'danger')
-
-    return render_template('users/login.html', form=form)
+#     if CURR_USER_KEY in session:
+#         del session[CURR_USER_KEY]
 
 
-@app.post('/logout')
-def logout():
-    """Handle logout of user and redirect to homepage."""
+# @app.route('/signup', methods=["GET", "POST"])
+# def signup():
+#     """Handle user signup.
 
-    form = g.csrf_form
+#     Create new user and add to DB. Redirect to home page.
 
-    if not form.validate_on_submit() or not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+#     If form not valid, present form.
 
-    do_logout()
+#     If the there already is a user with that username: flash message
+#     and re-present form.
+#     """
 
-    flash("You have successfully logged out.", 'success')
-    return redirect("/login")
+#     do_logout()
+
+#     form = UserAddForm()
+
+#     if form.validate_on_submit():
+#         try:
+#             user = User.signup(
+#                 username=form.username.data,
+#                 password=form.password.data,
+#                 email=form.email.data,
+#                 image_url=form.image_url.data or User.image_url.default.arg,
+#             )
+#             db.session.commit()
+
+#         except IntegrityError:
+#             flash("Username already taken", 'danger')
+#             return render_template('users/signup.html', form=form)
+
+#         do_login(user)
+
+#         return redirect("/")
+
+#     else:
+#         return render_template('users/signup.html', form=form)
+
+
+# @app.route('/login', methods=["GET", "POST"])
+# def login():
+#     """Handle user login and redirect to homepage on success."""
+
+#     form = LoginForm()
+
+#     if form.validate_on_submit():
+#         user = User.authenticate(
+#             form.username.data,
+#             form.password.data,
+#         )
+
+#         if user:
+#             do_login(user)
+#             flash(f"Hello, {user.username}!", "success")
+#             return redirect("/")
+
+#         flash("Invalid credentials.", 'danger')
+
+#     return render_template('users/login.html', form=form)
+
+
+# @app.post('/logout')
+# def logout():
+#     """Handle logout of user and redirect to homepage."""
+
+#     form = g.csrf_form
+
+#     if not form.validate_on_submit() or not g.user:
+#         flash("Access unauthorized.", "danger")
+#         return redirect("/")
+
+#     do_logout()
+
+#     flash("You have successfully logged out.", 'success')
+#     return redirect("/login")
 
 
 ##############################################################################
@@ -149,19 +149,19 @@ def get_all_listings():
     Can take a 'q' param in querystring to search for listing.
     """
     listings = Listing.query.all()
-    serialized = listings.serialize()
+    serialized = [listing.serialize() for listing in listings]
 
     return jsonify(listings=serialized)
 
 
 @app.get('/listings/<int:id>')
-def get_listing(listing_id):
+def get_listing(id):
     """Returns Details of Listing
 
     Pulls id from query
     """
 
-    listing = Listing.query.get_or_404(listing_id)
+    listing = Listing.query.get_or_404(id)
     serialized = listing.serialize()
 
     return jsonify(listing=serialized)
@@ -175,8 +175,6 @@ def create_listing():
     price = request.json['price']
     details = request.json['details']
 
-    url = request.json['url']
-
     # submit listing first
     new_listing = Listing(name=name,
                           price=price,
@@ -185,15 +183,28 @@ def create_listing():
     db.session.add(new_listing)
     db.session.commit()
 
-    return (jsonify(new_listing=new_listing.to_dict()), 201)
+    serialized = new_listing.serialize()
 
-# new endpoint
-    # then show form for adding photos
+    return (jsonify(new_listing=serialized), 201)
+
+
+@app.post('/listings/<int:id>/photos')
+def create_photos_for_listing(id):
+    """Creates a photo for new listing"""
+
+    # finds listing with id
+    listing = Listing.query.get_or_404(id)
+
+    url = request.json['url']
     new_photo = Photo(url=url,
-                      listing_id=new_listing.id)
+                      listing_id=listing.id)
+
+    serialized = new_photo.serialize()
 
     db.session.add(new_photo)
     db.session.commit()
+
+    return jsonify(new_photo=serialized)
 
 
 ##############################################################################

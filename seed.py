@@ -7,7 +7,7 @@ db.create_all()
 u1 = User(
     username="cherry",
     email="large@large.com",
-    password="password",
+    password="$2b$12$Q1PUFjhN/AWRQ21LbGYvjeLpZZB6lfZ1BPwifHALGO6oIbyC3CmJe",
 
 )
 
