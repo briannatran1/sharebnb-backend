@@ -13,7 +13,7 @@ from models import (
 from werkzeug.utils import secure_filename
 from forms import CSRFProtection
 import bucket_testing
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 # from authlib.jose import jwt
 
 load_dotenv()
@@ -22,7 +22,8 @@ CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL', 'postgresql:///sharebnb')
@@ -193,11 +194,12 @@ def get_listing(id):
 
 
 @app.post('/listings')
+# @cross_origin()
 def create_listing():
     """Endpoint for creating new listing"""
 
-    # if not g.user:
-    #     return (jsonify(msg="NOT AUTHORIZED"))
+    if not g.user:
+        return (jsonify(msg="NOT AUTHORIZED"))
 
     name = request.json['name']
     price = request.json['price']
@@ -222,8 +224,8 @@ def create_listing():
 def book_listing(listing_id):
     """Allows user to book property listing"""
 
-    # if not g.user:
-    #     return (jsonify(msg="NOT AUTHORIZED"))
+    if not g.user:
+        return (jsonify(msg="NOT AUTHORIZED"))
 
     listing = Listing.query.get_or_404(listing_id)
 
