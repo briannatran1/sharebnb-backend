@@ -26,7 +26,7 @@ def upload_file(file_name, bucket, object_name=None):
         aws_secret_access_key=AWS_SECRET_KEY,
     )
     try:
-        response = s3_client.upload_file(file_name, bucket, object_name)
+        response = s3_client.upload_fileobj(file_name, bucket, object_name)
     except ClientError as e:
         logging.error(e)
         return False
@@ -49,6 +49,7 @@ def get_file_url(bucket, object_name):
     url = f"https://{bucket}.s3.{location}.amazonaws.com/{object_name}"
     return url
 
+
 # s3 = boto3.client('s3')
 # with open("house.jpg", 'rb') as f:
 #     s3.upload_fileobj(f, bucket, "house.jpg")
@@ -58,6 +59,10 @@ def get_file_url(bucket, object_name):
 # upload_file("house.jpg", bucket, AWSFILENAME)
 
 
-def upload_listing_photo(file):
-    upload_file(file, bucket, file)
-    return get_file_url(bucket, file)
+def upload_listing_photo(file, secure_file_name):
+    print('file in upload listing', file)
+    upload_file(file, bucket, secure_file_name)
+    return get_file_url(bucket, secure_file_name)
+
+# file getting added to our vscode
+# fn to delete?

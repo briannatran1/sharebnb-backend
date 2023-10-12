@@ -142,6 +142,16 @@ def logout():
 # General users routes:
 
 
+@app.get('/users')
+def get_all_users():
+    """Returns list of users."""
+
+    users = User.query.all()
+    serialized = [user.serialize() for user in users]
+
+    return jsonify(users=serialized)
+
+
 ##############################################################################
 # General listing routes:
 
@@ -242,13 +252,11 @@ def create_photos_for_listing(id):
     """Creates a photo for new listing"""
     url = None
     img = request.files['file']
-    # TODO: Handle non-img photos?
+    # Handle non-img photos?
     if img:
         # secure_filename renames the file in a correct format
         filename = secure_filename(img.filename)
-        img.save(filename)
-
-        url = bucket_testing.upload_listing_photo(filename)
+        url = bucket_testing.upload_listing_photo(img, filename)
 
     # finds listing with id
     listing = Listing.query.get_or_404(id)
@@ -280,5 +288,4 @@ def get_messages():
 
 @app.post('/messages/<int:listing_id>')
 def create_message():
-    """ create messages..
-    """
+    """ Create a message """

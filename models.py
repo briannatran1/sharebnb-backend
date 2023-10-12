@@ -25,13 +25,13 @@ class Booking(db.Model):
 
     listing_id = db.Column(
         db.Integer,
-        db.ForeignKey('listings.id'),
+        db.ForeignKey('listings.id', ondelete="cascade"),
         nullable=False,
     )
 
     booking_user_id = db.Column(
         db.Integer,
-        db.ForeignKey('users.id'),
+        db.ForeignKey('users.id', ondelete="cascade"),
         nullable=False,
     )
 
@@ -190,13 +190,6 @@ class User(db.Model):
         secondaryjoin=(Message.recipient_id == id),
         backref="recieved_messages",
     )
-
-    # booked_listings = db.relationship(
-    #     "Listing",
-    #     secondary="bookings",
-    #     primaryjoin=(Booking.booking_user_id == id),
-    #     secondaryjoin=(Booking.listing_id == Listing.id),
-    #     backref='users')
 
     @classmethod
     def signup(cls, first_name, last_name, username, email, password):
