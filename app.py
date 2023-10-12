@@ -13,6 +13,7 @@ from models import (
 from werkzeug.utils import secure_filename
 from forms import CSRFProtection
 import bucket_testing
+from flask_cors import CORS
 # from authlib.jose import jwt
 
 load_dotenv()
@@ -20,6 +21,8 @@ load_dotenv()
 CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
+
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL', 'postgresql:///sharebnb')
