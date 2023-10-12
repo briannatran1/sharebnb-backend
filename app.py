@@ -196,8 +196,8 @@ def get_listing(id):
 def create_listing():
     """Endpoint for creating new listing"""
 
-    if not g.user:
-        return (jsonify(msg="NOT AUTHORIZED"))
+    # if not g.user:
+    #     return (jsonify(msg="NOT AUTHORIZED"))
 
     name = request.json['name']
     price = request.json['price']
@@ -222,8 +222,8 @@ def create_listing():
 def book_listing(listing_id):
     """Allows user to book property listing"""
 
-    if not g.user:
-        return (jsonify(msg="NOT AUTHORIZED"))
+    # if not g.user:
+    #     return (jsonify(msg="NOT AUTHORIZED"))
 
     listing = Listing.query.get_or_404(listing_id)
 
