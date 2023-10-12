@@ -90,6 +90,7 @@ class Listing(db.Model):
             "name": self.name,
             "price": self.price,
             "details": self.details,
+            "user_id": self.user_id,
             "photos": [photo.serialize() for photo in self.photos],
             "booked_listings": [booked_listing.serialize() for booked_listing in self.booked_listings]
         }
@@ -136,7 +137,8 @@ class Message(db.Model):
             "id": self.id,
             "text": self.text,
             "timestamp": self.timestamp,
-            "user_id": self.user_id
+            "sender_id": self.sender_id,
+            "recipient_id": self.recipient_id
         }
 
     # messages from and to?
@@ -180,15 +182,16 @@ class User(db.Model):
         nullable=False,
     )
 
-    owned_listings = db.relationship("Listing", backref="users")
+    owned_listings = db.relationship('Listing', backref='users')
     booked_listings = db.relationship('Booking', backref='users')
 
+    # TODO: MESSAGES NOT SHOWING UP
     sent_messages = db.relationship(
         "User",
         secondary="messages",
-        primaryjoin=(Message.sender_id == id),
-        secondaryjoin=(Message.recipient_id == id),
-        backref="recieved_messages",
+        primaryjoin=(Message.recipient_id == id),
+        secondaryjoin=(Message.sender_id == id),
+        backref="received_messages",
     )
 
     @classmethod
@@ -234,6 +237,7 @@ class User(db.Model):
 
     def serialize(self):
         """Serialize to dictionary"""
+        print("\n\n\n\n\nself.sent_messages\n\n\n\n\n", self.sent_messages)
 
         return {
             "id": self.id,
@@ -241,7 +245,9 @@ class User(db.Model):
             "last_name": self.last_name,
             "username": self.username,
             "email": self.email,
-            "booked_listings": [booked_listing.serialize() for booked_listing in self.booked_listings]
+            "booked_listings": [booked_listing.serialize() for booked_listing in self.booked_listings],
+            # "sent_messages": [message.serialize() for message in self.sent_messages]
+            # "received_messages": [message.serialize() for message in self.received_messages]
         }
 
 

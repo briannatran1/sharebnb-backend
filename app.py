@@ -275,7 +275,7 @@ def create_photos_for_listing(id):
 # General message routes:
 
 
-@app.get('/messages/<int:listing_id>')
+@app.get('/messages')
 def get_messages():
     """Returns list of messages..
     """
@@ -287,5 +287,24 @@ def get_messages():
 
 
 @app.post('/messages/<int:listing_id>')
-def create_message():
+def create_message(listing_id):
     """ Create a message """
+
+    if not g.user:
+        return (jsonify(msg="NOT AUTHORIZED"))
+
+    listing = Listing.query.get_or_404(listing_id)
+
+    text = request.json['text']
+
+    new_message = Message(text=text,
+                          sender_id=g.user.id,
+                          recipient_id=listing.user_id
+                          )
+
+    db.session.add(new_message)
+    db.session.commit()
+
+    serialized = new_message.serialize()
+
+    return (jsonify(new_message=serialized), 201)
