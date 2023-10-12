@@ -144,6 +144,54 @@ class Message(db.Model):
     # messages from and to?
 
 
+# class UserSentMessage(db.Model):
+#     """User sending a message"""
+
+#     __tablename__ = 'user_sent_messages'
+
+#     id = db.Column(
+#         db.Integer,
+#         primary_key=True,
+#         autoincrement=True,
+#     )
+
+#     sender_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('users.id'),
+#         nullable=False
+#     )
+
+#     message_sender_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('messages.sender_id'),
+#         nullable=False
+#     )
+
+
+# class UserReceiveMessage(db.Model):
+#     """User receiving the message"""
+
+#     __tablename__ = 'user_receive_messages'
+
+#     id = db.Column(
+#         db.Integer,
+#         primary_key=True,
+#         autoincrement=True,
+#     )
+
+#     recipient_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('users.id'),
+#         nullable=False
+#     )
+
+#     message_recipient_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('messages.recipient_id'),
+#         nullable=False
+#     )
+
+
 class User(db.Model):
     """User in the system"""
 
@@ -185,14 +233,22 @@ class User(db.Model):
     owned_listings = db.relationship('Listing', backref='users')
     booked_listings = db.relationship('Booking', backref='users')
 
-    # TODO: MESSAGES NOT SHOWING UP
-    sent_messages = db.relationship(
-        "User",
-        secondary="messages",
-        primaryjoin=(Message.recipient_id == id),
-        secondaryjoin=(Message.sender_id == id),
-        backref="received_messages",
-    )
+    # # TODO: MESSAGES NOT SHOWING UP
+    # sent_messages = db.relationship(
+    #     "Message",
+    #     secondary="user_sent_messages",
+    #     primaryjoin=(UserSentMessage.message_sender_id == id),
+    #     secondaryjoin=(UserSentMessage.sender_id == Message.sender_id),
+    #     backref="received_messages",
+    # )
+
+    # received_messages = db.relationship(
+    #     "Message",
+    #     secondary="user_receive_messages",
+    #     primaryjoin=(id == Message.sender_id),
+    #     secondaryjoin=(id == Message.recipient_id),
+    #     backref="sent_messages",
+    # )
 
     @classmethod
     def signup(cls, first_name, last_name, username, email, password):
@@ -237,7 +293,6 @@ class User(db.Model):
 
     def serialize(self):
         """Serialize to dictionary"""
-        print("\n\n\n\n\nself.sent_messages\n\n\n\n\n", self.sent_messages)
 
         return {
             "id": self.id,
@@ -246,7 +301,7 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
             "booked_listings": [booked_listing.serialize() for booked_listing in self.booked_listings],
-            # "sent_messages": [message.serialize() for message in self.sent_messages]
+            # "sent_messages": [message.serialize() for message in self.sent_messages],
             # "received_messages": [message.serialize() for message in self.received_messages]
         }
 
