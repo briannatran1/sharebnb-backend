@@ -157,13 +157,13 @@ class Message(db.Model):
 
 #     sender_id = db.Column(
 #         db.Integer,
-#         db.ForeignKey('users.id'),
+#         db.ForeignKey('users.id', ondelete="cascade"),
 #         nullable=False
 #     )
 
 #     message_sender_id = db.Column(
 #         db.Integer,
-#         db.ForeignKey('messages.sender_id'),
+#         db.ForeignKey('messages.sender_id', ondelete="cascade"),
 #         nullable=False
 #     )
 

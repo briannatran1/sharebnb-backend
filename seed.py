@@ -1,5 +1,5 @@
 from app import app
-from models import db, User, Listing, Photo, Booking, Message
+from models import db, User, Listing, Photo, Booking, Message, UserSentMessage
 
 db.drop_all()
 db.create_all()
@@ -44,8 +44,16 @@ m1 = Message(
     recipient_id=2,
 )
 
+usm1 = UserSentMessage(
+    sender_id=1,
+    message_sender_id=1
+)
+
 db.session.add_all([u1, u2])
 db.session.commit()
 
 db.session.add_all([l1, p1, b1, m1])
+db.session.commit()
+
+db.session.add_all([usm1])
 db.session.commit()
