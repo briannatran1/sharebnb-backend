@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 from forms import CSRFProtection
 import bucket_testing
 from flask_cors import CORS, cross_origin
-# from authlib.jose import jwt
+from authlib.jose import jwt
 
 load_dotenv()
 
@@ -42,7 +42,6 @@ connect_db(app)
 @app.before_request
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
-    # print("session[CURR_USER_KEY]", session[CURR_USER_KEY])
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
     else:
@@ -57,7 +56,9 @@ def add_csrf_only_form():
 
 
 def do_login(user):
-    """Log in user."""
+    """Log in user.
+
+    Assigns user id to session."""
     session[CURR_USER_KEY] = user.id
 
 
@@ -198,14 +199,14 @@ def get_listing(id):
 # @cross_origin()
 def create_listing():
     """Endpoint for creating new listing"""
-    print("g.user", g.user)
 
-    if not g.user:
-        return (jsonify(msg="NOT AUTHORIZED"))
+    # if not g.user:
+    #     return (jsonify(msg="NOT AUTHORIZED"))
 
     name = request.json['name']
     price = request.json['price']
     details = request.json['details']
+    # FIXME: find user id somewhere else
     user_id = g.user.id
 
     # submit listing first
@@ -226,15 +227,16 @@ def create_listing():
 def book_listing(listing_id):
     """Allows user to book property listing"""
 
-    if not g.user:
-        return (jsonify(msg="NOT AUTHORIZED"))
+    # if not g.user:
+    #     return (jsonify(msg="NOT AUTHORIZED"))
 
     listing = Listing.query.get_or_404(listing_id)
 
     if not listing:
         return (jsonify(msg="BAD REQUEST"))
 
-    new_booking = Booking(listing_id=listing_id, booking_user_id=g.user.id)
+    new_booking = Booking(listing_id=listing_id,
+                          booking_user_id=g.user.id)
 
     db.session.add(new_booking)
     db.session.commit()
