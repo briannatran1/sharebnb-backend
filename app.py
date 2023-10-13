@@ -42,9 +42,12 @@ connect_db(app)
 @app.before_request
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
-
+    print("CURR_USER_KEY", CURR_USER_KEY)
+    print("BEFORE REQUEST RAN")
+    # print("session[CURR_USER_KEY]", session[CURR_USER_KEY])
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
+        print("g.user", g.user)
     else:
         g.user = None
 
@@ -59,7 +62,10 @@ def add_csrf_only_form():
 def do_login(user):
     """Log in user."""
 
+    print("CURRUSERKEY", CURR_USER_KEY)
+
     session[CURR_USER_KEY] = user.id
+    print("SESSION CURRUSERKEY IN DO LOGIN", session[CURR_USER_KEY])
 
 
 def do_logout():
@@ -70,6 +76,7 @@ def do_logout():
 
 
 @app.route('/signup', methods=["GET", "POST"])
+@cross_origin(supports_credentials=True)
 def signup():
     """Handle user signup.
 
@@ -111,6 +118,7 @@ def signup():
 
 
 @app.route('/login', methods=["GET", "POST"])
+@cross_origin(supports_credentials=True)
 def login():
     """Handle user login
 
@@ -166,7 +174,7 @@ def get_all_listings():
 
     Can take a 'q' param in querystring to search for listing.
     """
-
+    print("g.user in listings route", g.user)
     search = request.args.get('q')
 
     if not search:
@@ -197,6 +205,7 @@ def get_listing(id):
 # @cross_origin()
 def create_listing():
     """Endpoint for creating new listing"""
+    print("g.user", g.user)
 
     if not g.user:
         return (jsonify(msg="NOT AUTHORIZED"))
