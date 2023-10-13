@@ -206,8 +206,7 @@ def create_listing():
     name = request.json['name']
     price = request.json['price']
     details = request.json['details']
-    # FIXME: find user id somewhere else
-    user_id = g.user.id
+    user_id = request.json['id']
 
     # submit listing first
     new_listing = Listing(name=name,
