@@ -258,6 +258,7 @@ def get_all_photos():
 @app.post('/listings/<int:id>/photos')
 def create_photos_for_listing(id):
     """Creates a photo for new listing"""
+    print("\n\n\n\nrequest\n\n\n\n\n", request)
     url = None
     img = request.files['file']
     # Handle non-img photos?
