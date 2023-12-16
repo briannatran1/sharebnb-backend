@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-AWS_ACCESS_KEY = os.environ['ACCESS_KEY']
-AWS_SECRET_KEY = os.environ['SECRET_KEY']
+AWS_ACCESS_KEY = os.environ.get('ACCESS_KEY')
+AWS_SECRET_KEY = os.environ.get('SECRET_KEY')
 
 bucket = 'be-sharebnb-listing-photos'
 
